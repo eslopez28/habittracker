@@ -1,0 +1,171 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Entrenamiento</ion-title>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Entrenamiento</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div class="ion-padding">
+
+    <div *ngIf="!isWorkoutActive">
+
+      <ion-segment [(ngModel)]="selectedWorkoutType" (ionChange)="onWorkoutTypeChange()">
+        <ion-segment-button value="single">
+          <ion-label>Serie Simple</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="super">
+          <ion-label>Super Serie</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="timed">
+          <ion-label>Por Tiempo</ion-label>
+        </ion-segment-button>
+      </ion-segment>
+
+      <div class="workout-form ion-margin-top">
+
+        <ion-card *ngIf="selectedWorkoutType === 'single'">
+          <ion-card-header>
+            <ion-card-subtitle>Definir Serie Simple</ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-item>
+              <ion-label position="stacked">Nombre del Ejercicio</ion-label>
+              <ion-input type="text" [(ngModel)]="singleSetConfig.exerciseName" placeholder="Ej: Press de Banca" aria-label="Nombre del Ejercicio"></ion-input>
+            </ion-item>
+            <ion-item>
+              <ion-label position="stacked">Número de Series</ion-label>
+              <ion-input type="number" [(ngModel)]="singleSetConfig.sets" min="1" value="3" inputmode="numeric" aria-label="Número de Series"></ion-input>
+            </ion-item>
+            <ion-item>
+              <ion-label position="stacked">Repeticiones por Serie</ion-label>
+              <ion-input type="number" [(ngModel)]="singleSetConfig.reps" min="1" value="10" inputmode="numeric" aria-label="Repeticiones por Serie"></ion-input>
+            </ion-item>
+            <ion-item>
+              <ion-label position="stacked">Descanso entre Series (segundos)</ion-label>
+              <ion-input type="number" [(ngModel)]="singleSetConfig.restTime" min="0" value="60" inputmode="numeric" aria-label="Descanso entre Series"></ion-input>
+            </ion-item>
+          </ion-card-content>
+        </ion-card>
+
+        <ion-card *ngIf="selectedWorkoutType === 'super'">
+          <ion-card-header>
+            <ion-card-subtitle>Definir Super Serie</ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-item>
+              <ion-label position="stacked">Número Total de Series</ion-label>
+              <ion-input type="number" [(ngModel)]="superSetConfig.sets" min="1" value="3" inputmode="numeric" aria-label="Número Total de Series"></ion-input>
+            </ion-item>
+             <ion-item>
+              <ion-label position="stacked">Descanso entre Ejercicios (segundos)</ion-label>
+              <ion-input type="number" [(ngModel)]="superSetConfig.intraSetRestTime" min="0" value="10" inputmode="numeric" aria-label="Descanso entre Ejercicios"></ion-input>
+            </ion-item>
+            <ion-item>
+              <ion-label position="stacked">Descanso entre Series (segundos)</ion-label>
+              <ion-input type="number" [(ngModel)]="superSetConfig.interSetRestTime" min="0" value="90" inputmode="numeric" aria-label="Descanso entre Series"></ion-input>
+            </ion-item>
+
+            <ion-list lines="none"> <ion-list-header>
+                <ion-label>Ejercicios en la Super Serie</ion-label>
+              </ion-list-header>
+              <ion-item *ngFor="let exercise of superSetConfig.exercises; let i = index">
+                <ion-input type="text" [(ngModel)]="exercise.name" placeholder="Nombre Ejercicio {{ i + 1 }}" [attr.aria-label]="'Nombre Ejercicio ' + (i + 1)"></ion-input>
+                <ion-input type="number" [(ngModel)]="exercise.reps" placeholder="Reps" min="1" inputmode="numeric" class="reps-input"></ion-input>
+                <ion-button fill="clear" color="danger" (click)="removeSuperSetExercise(i)" *ngIf="superSetConfig.exercises.length > 1" [attr.aria-label]="'Eliminar Ejercicio ' + (i + 1)">
+                   <ion-icon slot="icon-only" name="remove-circle" aria-hidden="true"></ion-icon>
+                 </ion-button>
+              </ion-item>
+            </ion-list>
+             <ion-button fill="outline" (click)="addSuperSetExercise()" *ngIf="superSetConfig.exercises.length < 3"> <ion-icon slot="start" name="add" aria-hidden="true"></ion-icon>
+              Añadir Ejercicio
+            </ion-button>
+          </ion-card-content>
+        </ion-card>
+
+        <ion-card *ngIf="selectedWorkoutType === 'timed'">
+           <ion-card-header>
+             <ion-card-subtitle>Definir Ejercicio por Tiempo</ion-card-subtitle>
+             <ion-card-title>(AMRAP / Isométrico / Estiramiento)</ion-card-title>
+           </ion-card-header>
+           <ion-card-content>
+             <ion-item>
+               <ion-label position="stacked">Nombre del Ejercicio/Actividad</ion-label>
+               <ion-input type="text" [(ngModel)]="timedSetConfig.exerciseName" placeholder="Ej: Plancha / AMRAP Flexiones" aria-label="Nombre del Ejercicio o Actividad"></ion-input>
+             </ion-item>
+             <ion-item>
+               <ion-label position="stacked">Duración (segundos)</ion-label>
+               <ion-input type="number" [(ngModel)]="timedSetConfig.duration" min="1" value="30" inputmode="numeric" aria-label="Duración en segundos"></ion-input>
+             </ion-item>
+              <ion-item>
+               <ion-label position="stacked">Número de Series (Opcional)</ion-label>
+               <ion-input type="number" [(ngModel)]="timedSetConfig.sets" min="1" placeholder="1" inputmode="numeric" aria-label="Número de Series"></ion-input>
+             </ion-item>
+              <ion-item>
+               <ion-label position="stacked">Descanso entre Series (segundos, si > 1)</ion-label>
+               <ion-input type="number" [(ngModel)]="timedSetConfig.restTime" min="0" placeholder="0" inputmode="numeric" aria-label="Descanso entre Series"></ion-input>
+             </ion-item>
+           </ion-card-content>
+         </ion-card>
+
+      </div> <ion-button expand="block" color="success" (click)="startWorkout()" class="ion-margin-top" [disabled]="!canStartWorkout()">
+        <ion-icon slot="start" name="play" aria-hidden="true"></ion-icon>
+        Iniciar Entrenamiento
+      </ion-button>
+
+    </div> <div *ngIf="isWorkoutActive && workoutState" class="active-workout-display ion-text-center ion-margin-top">
+
+      <ion-card>
+         <ion-card-header>
+           <ion-card-subtitle>{{ workoutState.workoutTypeDisplay }}</ion-card-subtitle>
+           <ion-card-title>{{ workoutState.currentExerciseName }}</ion-card-title>
+         </ion-card-header>
+
+         <ion-card-content>
+
+           <div *ngIf="workoutState.totalSets > 1" class="set-info">
+             Serie {{ workoutState.currentSet }} / {{ workoutState.totalSets }}
+           </div>
+
+           <div *ngIf="workoutState.mode === 'exercise_reps'" class="reps-display">
+             <p>Objetivo:</p>
+             <div class="target-reps">{{ workoutState.currentTargetReps }} reps</div>
+             <ion-button (click)="completeSet()" color="primary" size="large" class="ion-margin-top">
+                <ion-icon slot="start" name="checkmark-done" aria-hidden="true"></ion-icon>
+                Serie Completada
+             </ion-button>
+             <ion-button *ngIf="workoutState.showNextExerciseButton" (click)="nextExercise()" fill="outline" class="ion-margin-top">
+                Siguiente Ejercicio <ion-icon slot="end" name="play-forward" aria-hidden="true"></ion-icon>
+             </ion-button>
+           </div>
+
+           <div *ngIf="workoutState.mode === 'exercise_timed'" class="timed-display">
+             <p>Tiempo Restante:</p>
+             <div class="time-left-display">{{ formatTime(workoutState.timeLeft) }}</div>
+             <ion-progress-bar [value]="workoutState.progressPercentage" color="success"></ion-progress-bar>
+           </div>
+
+           <div *ngIf="workoutState.mode === 'rest' || workoutState.mode === 'intra_set_rest'" class="rest-display">
+             <p>Descanso:</p>
+             <div class="time-left-display">{{ formatTime(workoutState.timeLeft) }}</div>
+             <ion-progress-bar [value]="workoutState.progressPercentage" color="tertiary"></ion-progress-bar>
+             <ion-button fill="outline" color="medium" (click)="skipRest()" class="ion-margin-top">
+                <ion-icon slot="start" name="play-skip-forward" aria-hidden="true"></ion-icon>
+                Saltar Descanso
+             </ion-button>
+           </div>
+
+           <ion-button color="danger" (click)="endWorkout()" class="ion-margin-top">
+             <ion-icon slot="start" name="stop-circle" aria-hidden="true"></ion-icon>
+             Terminar Entrenamiento
+           </ion-button>
+
+         </ion-card-content>
+      </ion-card>
+
+    </div> </div> </ion-content>

@@ -1,0 +1,102 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Mis Hábitos</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+    <ion-fab-button (click)="openAddHabitModal()">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
+  <div class="ion-padding">
+    <!-- Vista diaria -->
+    <div *ngIf="currentView === 'daily'">
+      <ion-list-header class="ion-margin-bottom">
+        <ion-item lines="none">
+          <ion-button fill="clear" id="open-date-picker">
+            <ion-icon slot="start" name="calendar-outline"></ion-icon>
+            <ion-label
+              >{{ selectedDate | date:'fullDate':'':'es-CR' }}</ion-label
+            >
+          </ion-button>
+          <ion-popover trigger="open-date-picker" show-backdrop="false">
+            <ng-template>
+              <ion-datetime
+                presentation="date"
+                [(ngModel)]="selectedDate"
+                (ionChange)="dateChanged()"
+                [min]="minDate"
+                [max]="maxDate"
+              ></ion-datetime>
+            </ng-template>
+          </ion-popover>
+          <ion-buttons slot="end">
+            <ion-button
+              fill="clear"
+              (click)="changeDay(-1)"
+              aria-label="Día anterior"
+              [disabled]="isPreviousDayDisabled()"
+            >
+              <ion-icon slot="icon-only" name="chevron-back-outline"></ion-icon>
+            </ion-button>
+            <ion-button
+              fill="clear"
+              (click)="changeDay(1)"
+              aria-label="Día siguiente"
+              [disabled]="isNextDayDisabled()"
+            >
+              <ion-icon
+                slot="icon-only"
+                name="chevron-forward-outline"
+              ></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-item>
+      </ion-list-header>
+
+      <!-- Lista de hábitos diarios -->
+      <ion-list *ngIf="allHabits && allHabits.length > 0; else noHabitsDaily">
+        <ion-item *ngFor="let habit of allHabits" lines="full">
+          <ion-checkbox
+            slot="start"
+            [checked]="isHabitCompleted(habit)"
+            (ionChange)="toggleDailyCompletion(habit)"
+            [ariaLabel]="'Marcar ' + habit.name + ' como completado hoy'">
+          </ion-checkbox>
+          <ion-label>
+            <h2>{{ habit.name }}</h2>
+            <p *ngIf="habit.time || habit.frequency">
+              <span *ngIf="habit.time">Hora: {{ habit.time }}</span>
+              <span *ngIf="habit.time && habit.frequency"> | </span>
+              <span *ngIf="habit.frequency">Meta Semanal: {{ habit.frequency }}</span>
+            </p>
+          </ion-label>
+          <ion-buttons slot="end">
+            <ion-button
+              fill="clear"
+              color="medium"
+              (click)="editHabit(habit)"
+              aria-label="Editar hábito">
+              <ion-icon slot="icon-only" name="pencil-outline"></ion-icon>
+            </ion-button>
+            <ion-button
+              fill="clear"
+              color="danger"
+              (click)="deleteHabit(habit)"
+              aria-label="Eliminar hábito">
+              <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-item>
+      </ion-list>
+      <ng-template #noHabitsDaily>
+        <div class="ion-text-center ion-padding-top">
+          <p>No hay hábitos programados para hoy.</p>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</ion-content>

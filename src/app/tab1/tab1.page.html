@@ -1,0 +1,94 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Temporizador Configurable</ion-title>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Temporizador</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div class="ion-padding">
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Configuración del Temporizador</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list lines="full">
+          <ion-item>
+            <ion-label position="stacked">Tiempo de Enfoque (minutos)</ion-label>
+            <ion-input type="number" [(ngModel)]="config.focusDuration" min="1" inputmode="numeric"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Descanso Corto (minutos)</ion-label>
+            <ion-input type="number" [(ngModel)]="config.shortBreakDuration" min="1" inputmode="numeric"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Descanso Largo (minutos)</ion-label>
+            <ion-input type="number" [(ngModel)]="config.longBreakDuration" min="1" inputmode="numeric"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Intervalos por Ciclo</ion-label>
+            <ion-input type="number" [(ngModel)]="config.intervalsPerCycle" min="1" inputmode="numeric"></ion-input>
+          </ion-item>
+        </ion-list>
+
+        <ion-button expand="block" (click)="saveConfig()" class="ion-margin-top">
+          <ion-icon slot="start" name="save-outline"></ion-icon>
+          Guardar Configuración
+        </ion-button>
+
+        <ion-button expand="block" fill="outline" color="medium" (click)="resetConfigToDefaults()" class="ion-margin-top">
+          Restaurar Predeterminados
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+
+
+    <div *ngIf="timerVisible" class="timer-display-container ion-text-center ion-margin-top">
+
+      <div class="time-left-display">{{ formatTime(timeLeft) }}</div>
+
+        <div class="current-mode-display">{{ currentModeDisplay }}</div>
+
+        <ion-progress-bar [value]="progressPercentage" class="ion-margin-vertical"></ion-progress-bar>
+
+        <ion-grid>
+          <ion-row class="ion-justify-content-center">
+            <ion-col size="auto" *ngIf="!isRunning">
+              <ion-button shape="round" size="large" (click)="startOrResumeTimer()" color="success">
+                <ion-icon slot="icon-only" [name]="isPaused ? 'play' : 'play-circle'"></ion-icon>
+                 </ion-button>
+            </ion-col>
+
+            <ion-col size="auto" *ngIf="isRunning">
+              <ion-button shape="round" size="large" (click)="pauseTimer()" color="warning">
+                <ion-icon slot="icon-only" name="pause"></ion-icon>
+              </ion-button>
+            </ion-col>
+
+             <ion-col size="auto" *ngIf="isRunning || isPaused">
+              <ion-button shape="round" size="large" (click)="resetTimer()" color="danger">
+                <ion-icon slot="icon-only" name="refresh"></ion-icon> </ion-button>
+            </ion-col>
+
+            <ion-col size="auto" *ngIf="isRunning || isPaused">
+              <ion-button shape="round" size="large" (click)="skipTimer()" color="primary">
+                <ion-icon slot="icon-only" name="play-skip-forward"></ion-icon>
+              </ion-button>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+    </div> <div *ngIf="!timerVisible" class="ion-text-center ion-margin-top">
+       <p>Guarda una configuración para iniciar el temporizador.</p>
+     </div>
+
+  </div> </ion-content>
+

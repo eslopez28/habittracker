@@ -1,0 +1,52 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>{{ modalTitle }}</ion-title>
+    <ion-buttons slot="start">
+      <ion-button color="medium" (click)="cancel()">Cancelar</ion-button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button color="primary" (click)="confirm()" [strong]="true">Guardar</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-list lines="full">
+
+    <ion-item>
+      <ion-label position="stacked">Nombre <ion-text color="danger">*</ion-text></ion-label>
+      <ion-input
+        type="text"
+        [(ngModel)]="formData.name"
+        placeholder="Ej: Beber 2L Agua"
+        required="true"
+        aria-label="Nombre del hábito"
+        (ionChange)="$event.target.value = $event.target.value ?? ''"> </ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="stacked">Hora Preferida (Opcional)</ion-label>
+      <ion-input
+         type="time"
+         [(ngModel)]="formData.time"
+         placeholder="HH:MM"
+         aria-label="Hora preferida del hábito"
+         (ionChange)="$event.target.value = $event.target.value ?? ''"> </ion-input>
+       </ion-item>
+
+    <ion-item>
+      <ion-label position="stacked">Frecuencia Semanal (Veces) <ion-text color="danger">*</ion-text></ion-label>
+      <ion-input
+        type="number"
+        [(ngModel)]="formData.frequency"
+        min="1"
+        max="7"
+        inputmode="numeric"
+        required="true"
+        aria-label="Frecuencia semanal del hábito"
+        (ionInput)="$event.target.value = $event.target.value ?? ''"> </ion-input>
+      </ion-item>
+
+  </ion-list>
+
+  </ion-content>

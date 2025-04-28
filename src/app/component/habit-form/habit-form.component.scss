@@ -1,0 +1,16 @@
+// src/app/components/habit-form/habit-form.component.scss
+
+// Puedes añadir estilos específicos para el formulario aquí si los necesitas.
+// Por ejemplo, para ajustar márgenes o la apariencia de algún input.
+
+ion-item ion-label[position="stacked"] {
+  // Ejemplo: Ajustar tamaño o margen si es necesario
+  // font-size: 0.9em;
+  // margin-bottom: 2px;
+}
+
+ion-range {
+  // Ejemplo: Añadir padding si usas el ion-range
+  // padding-top: 10px;
+  // padding-bottom: 10px;
+}

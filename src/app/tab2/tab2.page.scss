@@ -1,0 +1,26 @@
+  /* Estilo para los marcadores de progreso semanal */
+  .weekly-progress-visual {
+    display: flex;
+    justify-content: space-around; /* O space-between */
+    align-items: center;
+  }
+  .day-marker {
+    display: inline-block;
+    /* Opcional: ajustar tamaño/espaciado de los iconos */
+    font-size: 1.2em; /* Tamaño del icono */
+  }
+  .day-marker ion-icon {
+     display: block; /* Asegura que el icono ocupe su espacio */
+  }
+
+  /* Asegurar que el header de lista no tenga tanto padding si contiene un item */
+  ion-list-header ion-item {
+    --inner-padding-end: 0;
+    --inner-padding-start: 0;
+    --padding-start: 0;
+    --padding-end: 0;
+  }
+  ion-list-header ion-item ion-label {
+    margin-top: 0;
+    margin-bottom: 0;
+  }
