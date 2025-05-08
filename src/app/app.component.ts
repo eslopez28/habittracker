@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, NgZone } from '@angular/core';
 
-import { LocalNotifications } from '@capacitor/local-notifications';
-import { Preferences } from '@capacitor/preferences';
-import { Platform } from '@ionic/angular'; // Para detectar la plataforma
+import { Channel, Importance, LocalNotifications } from '@capacitor/local-notifications';
+import { Platform, ToastController } from '@ionic/angular'; // Para detectar la plataforma
+import { StorageServices } from './services/StorageServices';
+import { AppForegroundService } from './services/AppForegroundService';
 
 interface AppSettings {
   firstExecutionDate: Date;
@@ -15,20 +16,35 @@ interface AppSettings {
   standalone: false,
 })
 export class AppComponent {
-  constructor(private platform: Platform) {
+  constructor(private platform: Platform, private storageServices: StorageServices,
+    private readonly ngZone: NgZone, private foregroundService: AppForegroundService,
+    private toastController: ToastController) {
     this.initializeApp();
   }
-
-  initializeApp() {
-    this.platform.ready().then(() => {
+  async initializeApp() {
+    this.platform.ready().then(async () => {
       console.log('Plataforma lista');
+      await this.ngOnInit();
+      this.storageServices.load('appConfig').then(r => {
+        if (r && typeof r === 'object' && 'firstExecutionDate' in r && !r.firstExecutionDate) {
+          this.storageServices.save('appConfig', {fistExecutionDate: new Date()})
+        }
+      });
+      this.createNotificationChannel('Urgent', 5).then(c => console.log('Canal creado')).catch(err=> this.showToast(err, 'danger'));
+      this.createNotificationChannel('Important', 4).then(c=> console.log('Canal creado')).catch(err=> this.showToast(err, 'danger'));
+      this.createNotificationChannel('Default', 3).then(c=> console.log('Canal creado')).catch(err=> this.showToast(err, 'danger'));
     });
-    Preferences.get({ key: 'appConfig' }).then((result) => {
-      if(!result.value) {
-        Preferences.set({ key: 'appConfig', value: JSON.stringify({
-          firstExecutionDate: new Date()
-        })});
+  }
+  private async createNotificationChannel(channelName: string, importance: Importance = 5) {
+    this.storageServices.getLastId().then(id => {
+      const channel: Channel = {
+        id: id.toString(),
+        name: channelName,
+        importance: importance, // Max importance for high-priority notifications
+        visibility: 1, // Public visibility
+        sound: undefined, // Default system sound
       }
+      return LocalNotifications.createChannel(channel);
     });
   }
 
@@ -38,13 +54,13 @@ export class AppComponent {
       try {
         const permissionStatus = await LocalNotifications.requestPermissions();
         if (permissionStatus.display === 'granted') {
-          console.log('Permiso de notificación concedido.');
+          this.showToast('Permiso de notificación concedido.');
         } else {
-          console.warn('Permiso de notificación NO concedido.');
+          this.showToast('Permiso de notificación NO concedido.', 'warning');
           // Podrías mostrar un mensaje al usuario explicando por qué son útiles
         }
       } catch (e) {
-        console.error('Error solicitando permiso de notificación:', e);
+        this.showToast('Error solicitando permiso de notificación: ' + e, 'danger');
       }
     } else {
       console.log(
@@ -56,7 +72,23 @@ export class AppComponent {
   }
 
   async ngOnInit() {
-    await this.requestNotificationPermission();
+    try {
+      await this.requestNotificationPermission();
+      await this.foregroundService.startService();
+    } catch (ex: any) {
+      this.showToast(ex, 'danger');
+    }
     // ... resto de ngOnInit ...
   }
+
+  private async showToast(message: string, color: 'success' | 'danger' | 'warning' = 'success'): Promise<void> {
+    const toast = await this.toastController.create({
+      message,
+      duration: 3000,
+      color,
+      position: 'bottom'
+    });
+    await toast.present();
+  }
+
 }

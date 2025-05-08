@@ -2,11 +2,10 @@ import { IonicModule } from '@ionic/angular';
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Tab2Page } from './tab2.page';
+import { FocusTimer } from './focus.timer.page';
 import { ExploreContainerComponentModule } from '../explore-container/explore-container.module';
 
-import { Tab2PageRoutingModule } from './tab2-routing.module';
-import { HabitFormComponent } from '../component/habit-form/habit-form.component';
+import { FocusTimerRoutingModule } from './focus.timer.module';
 
 @NgModule({
   imports: [
@@ -14,8 +13,8 @@ import { HabitFormComponent } from '../component/habit-form/habit-form.component
     CommonModule,
     FormsModule,
     ExploreContainerComponentModule,
-    Tab2PageRoutingModule
+    FocusTimerRoutingModule
   ],
-  declarations: [Tab2Page, HabitFormComponent]
+  declarations: [FocusTimer]
 })
-export class Tab2PageModule {}
+export class FocusTimerModule {}

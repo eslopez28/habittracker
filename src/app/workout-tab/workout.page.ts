@@ -10,6 +10,9 @@ import {
 import { Preferences } from '@capacitor/preferences';
 import { ModalController, ToastController } from '@ionic/angular';
 import { scheduled } from 'rxjs';
+import { NotificationServices } from '../services/NotificationServices';
+import { NotificationMessage } from '../model/NotificationMessage';
+import { ForegroundService } from '@capawesome-team/capacitor-android-foreground-service';
 
 // --- Interfaces para Configuración ---
 interface SingleSetConfig {
@@ -65,11 +68,11 @@ interface WorkoutState {
 
 @Component({
   selector: 'app-tab3',
-  templateUrl: 'tab3.page.html',
-  styleUrls: ['tab3.page.scss'],
+  templateUrl: 'workout.page.html',
+  styleUrls: ['workout.page.scss'],
   standalone: false,
 })
-export class Tab3Page implements OnInit, OnDestroy {
+export class WorkoutPage implements OnInit, OnDestroy {
   // --- Propiedades para la Configuración (vinculadas al HTML con [(ngModel)]) ---
   selectedWorkoutType: 'single' | 'super' | 'timed' = 'single';
   singleSetConfig: SingleSetConfig = {
@@ -103,7 +106,8 @@ export class Tab3Page implements OnInit, OnDestroy {
   constructor(
     private changeDetector: ChangeDetectorRef,
     private modalCtrl: ModalController, // Inyectar ModalController
-    private toastCtrl: ToastController
+    private toastCtrl: ToastController,
+    private notificationServices : NotificationServices
   ) {} // Inyectar ToastController
 
   async ngOnInit() {
@@ -164,18 +168,12 @@ export class Tab3Page implements OnInit, OnDestroy {
 
   // Añade un campo para ejercicio en la super serie
   addSuperSetExercise() {
-    if (this.superSetConfig.exercises.length < 3) {
-      // Limitar a 3 (o el límite que prefieras)
       this.superSetConfig.exercises.push({ name: '', reps: 10 });
-    }
   }
 
   // Elimina un ejercicio de la super serie
   removeSuperSetExercise(index: number) {
-    if (this.superSetConfig.exercises.length > 1) {
-      // Mantener al menos 1 (o 2?)
-      this.superSetConfig.exercises.splice(index, 1);
-    }
+    this.superSetConfig.exercises.splice(index, 1);
   }
 
   // Verifica si el formulario activo es válido para iniciar
@@ -583,12 +581,15 @@ export class Tab3Page implements OnInit, OnDestroy {
 
     this.sendNotification({
       at: new Date(endTime),
+      allowWhileIdle: true
     }); // Programar notificación para el final del timer
 
     this.timerInterval = setInterval(() => {
       // Llamar a tick DENTRO del contexto de la clase
       this.tick();
     }, 1000);
+
+
 
     this.changeDetector.detectChanges(); // Actualizar UI inicial del timer
   }
@@ -675,37 +676,12 @@ export class Tab3Page implements OnInit, OnDestroy {
   }
 
   async sendNotification(schedule: any = {}) {
-    // ... (tu lógica para determinar el siguiente estado) ...
-
-    // --- Programar Notificación ---
-    try {
-      // Define la notificación
-      const notificationId = this.workoutState?.currentSet;
-      const notificationExists = await LocalNotifications.getPending().then(
-        (res) => res.notifications.some((n) => n.id === notificationId)
-      );
-      if (notificationExists) {
-        console.log('Notificación ya programada, no se enviará.');
-        return;
-      }
-      const notification: LocalNotificationSchema = {
-        id: Math.floor(Date.now() % 100000), // ID único (timestamp simple funciona para notificaciones inmediatas)
-        title: `¡Tiempo Terminado!`,
-        body: this.determineNotificationBody(), // Mensaje personalizado según el modo
-        // schedule: { at: new Date(Date.now() + 100) } // Programar para casi inmediato
-        // O simplemente enviar sin 'schedule' para mostrar ya (depende versión plugin)
-        smallIcon: 'res://mipmap/ic_launcher', // Usa el icono por defecto de la app (Android)
-        sound: undefined, // Usa el sonido por defecto del sistema
-        schedule: schedule,
-      };
-
-      console.log('Programando notificación:', notification.id);
-      let toast = await LocalNotifications.schedule({
-        notifications: [notification],
-      })
-        .then(() => {
+    const notification = this.notificationServices.createLocalNotificationWithDefaults('¡Tiempo Terminado!', this.determineNotificationBody(),
+    schedule, "Important");
+    const resolvedNotification = await notification;
+    this.notificationServices.createNotification(new NotificationMessage(resolvedNotification.id, resolvedNotification)).then(() => {
           return this.toastCtrl.create({
-            message: notification.body,
+            message: resolvedNotification.body,
             duration: 2000,
             color: 'success',
           });
@@ -718,22 +694,15 @@ export class Tab3Page implements OnInit, OnDestroy {
           });
         });
 
+      const toast = await this.toastCtrl.create({
+        message: resolvedNotification.body,
+        duration: 2000,
+        color: 'success',
+      });
+
       if (toast) {
         await toast.present();
       }
-      if (this.workoutState?.notifications) {
-        this.workoutState.notifications.push(notification);
-      } else {
-        if (this.workoutState) {
-          this.workoutState.notifications = [notification];
-        }
-      }
-    } catch (e) {
-      console.error('Error programando notificación:', e);
-    }
-    // --- Fin Programar Notificación ---
-
-    // ... (resto de tu lógica para preparar/iniciar el siguiente intervalo) ...
   }
 
   // Función helper para el cuerpo de la notificación

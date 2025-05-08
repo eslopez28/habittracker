@@ -1,4 +1,4 @@
-import { Habit as ImportedHabit } from './tab2.page';
+import { Habit as ImportedHabit } from './habit.page';
 // src/app/pages/habits/habits.page.ts
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 // Quitamos imports de CommonModule, FormsModule, IonicModule de aquí
@@ -31,11 +31,11 @@ export interface HabitCompletionRecord {
 
 @Component({
   selector: 'app-habits',
-  templateUrl: './tab2.page.html',
-  styleUrls: ['./tab2.page.scss'],
+  templateUrl: './habit.page.html',
+  styleUrls: ['./habit.page.scss'],
   standalone: false, // No es standalone
 })
-export class Tab2Page implements OnInit, OnDestroy {
+export class HabitPage implements OnInit, OnDestroy {
   // --- Propiedades para la UI ---
   currentView: 'daily' | 'weekly' = 'daily';
   selectedDate: string = new Date().toISOString();
